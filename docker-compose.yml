@@ -1,0 +1,9 @@
+version: '2'
+services:
+  map:
+    build: .
+    privileged: true
+    restart: never
+    network_mode: host
+    ports:
+      - "8080"
