@@ -101,11 +101,6 @@ async function drawChart() {
         box.attr("transform", d3.zoomTransform(this));
     }
 
-    // node.call(d3.drag() //sets the event listener for the specified typenames and returns the drag behavior.
-    //     .on("start", dragstarted) //start - after a new pointer becomes active (on mousedown or touchstart).
-    //     .on("drag", dragged)      //drag - after an active pointer moves (on mousemove or touchmove).
-    // );
-
     // This function is run at each iteration of the force algorithm, updating the nodes position (the nodes data array is directly manipulated).
     function ticked() {
         link.attr("x1", d => d.source.x)
@@ -140,27 +135,8 @@ async function drawChart() {
         .attr("y", 5)
         .text(d => d);
 
-    //When the drag gesture starts, the targeted node is fixed to the pointer
-    //The simulation is temporarily “heated” during interaction by setting the target alpha to a non-zero value.
-    function dragstarted(d) {
-        if (!d.active) simulation.alphaTarget(0.3).restart();//sets the current target alpha to the specified number in the range [0,1].
-        d.fy = d.y; //fx - the node’s fixed x-position. Original is null.
-        d.fx = d.x; //fy - the node’s fixed y-position. Original is null.
-    }
-
-    //When the drag gesture starts, the targeted node is fixed to the pointer
-    function dragged(d) {
-        d.fx = d.sourceEvent.pageX;
-        d.fy = d.sourceEvent.pageY;
-    }
-
     return svg.node();
 
 }
 
-
-
-
-
-console.log("above draw chart")
 drawChart();

@@ -1,6 +1,5 @@
 const express = require('express');
 const { engine } = require('express-handlebars');
-const { getSdk } = require('@balena/jellyfish-client-sdk')
 const app = express();
 app.use(express.static('public'));
 app.engine('handlebars', engine());

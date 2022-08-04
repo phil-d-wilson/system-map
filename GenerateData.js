@@ -1,6 +1,5 @@
 const { getSdk } = require('@balena/jellyfish-client-sdk')
 const fs = require('fs');
-const { v4: uuid4 } = require('uuid');
 const sheet = require('./SheetData.js');
 
 // Create a new SDK instance, providing the API url and prefix
@@ -69,7 +68,7 @@ async function GetData() {
                             }
                             else
                             {
-                                console.log("Duplicate: " + card.slug)
+                                console.log("Ignoring duplicate: " + card.slug)
                             }
 
                             if (!nodesAdded.includes(l.slug)) {
@@ -82,7 +81,7 @@ async function GetData() {
                                 })
                                 nodesAdded.push(l.slug);
                             } else {
-                                console.log("Duplicate: " + l.slug)
+                                console.log("Ignoring duplicate: " + l.slug)
                             }
 
                             data.links.push({
@@ -101,5 +100,5 @@ async function GetData() {
 }
 
 
-console.log("start")
+console.log("Generating data file")
 GetData().then(result => { fs.writeFileSync('./data/data.json', JSON.stringify(result)) });
