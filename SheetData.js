@@ -4,7 +4,7 @@ const XLSX = require("xlsx");
 module.exports = {
     getSheetsData: async function () {
         let fileURL = process.env.SHEET_URL;
-        if (!token) {
+        if (!fileURL) {
             console.error("Google sheet URL not set. Set SHEET_URL in enVars")
             process.exit()
         }
