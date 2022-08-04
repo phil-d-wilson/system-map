@@ -9,6 +9,9 @@ const sdk = getSdk({
 
 });
 
+let data = [];
+let nodesAdded = [];
+
 async function GetData() {
 
     // Authorise the SDK using an auth token
@@ -20,75 +23,28 @@ async function GetData() {
     }
     sdk.setAuthToken(token);
 
-    let data = await sheet.getSheetsData();
-    let nodesAdded = data.nodes.map(d => d.id);
+    data = await sheet.getSheetsData();
+    nodesAdded = data.nodes.map(d => d.id);
     console.log("Got Google Sheets data");
 
     console.log("Creating Sagas first")
     let sagas = await sdk.card.getAllByType("saga@1.0.0");
     for (let saga of sagas) {
-        data.nodes.push({
-            "id": saga.slug,
-            "name": saga.name,
-            "group": saga.type.substring(0, saga.type.indexOf('@')),
-            "weight": saga.data.weight || 0,
-            "Link": "https://jel.ly.fish/" + saga.slug
-        })
-
-        nodesAdded.push(saga.slug);
+        AddNodeOrIgnoreDuplicate(saga)
     }
 
     console.log("Getting all improvements")
-    let cards = await sdk.card.getAllByType("improvement@1.0.0");
-    for (let card of (cards.filter(c => (c.data.status === "implementation")))) {
-        data.nodes.push({
-            "id": card.slug,
-            "name": card.name,
-            "group": card.type.substring(0, card.type.indexOf('@')),
-            "weight": card.data.weight || 0,
-            "Link": "https://jel.ly.fish/" + card.slug
-        })
-        nodesAdded.push(card.slug);
+    let improvements = await sdk.card.getAllByType("improvement@1.0.0");
+    for (let improvement of (improvements.filter(c => (c.data.status === "implementation")))) {
+        AddNodeOrIgnoreDuplicate(improvement)
 
-        await sdk.card.getWithLinks(card.slug, ['is attached to'])
-            .then((linkedCard) => {
-                if (linkedCard) {
-                    if (linkedCard.links) {
-                        for (l of (linkedCard.links['is attached to'].filter(link => (['saga@1.0.0', 'pattern@1.0.0'].includes(link.type))))) {
-                            if (!nodesAdded.includes(card.slug)) {
-                                data.nodes.push({
-                                    "id": card.slug,
-                                    "name": card.name,
-                                    "group": card.type.substring(0, card.type.indexOf('@')),
-                                    "weight": card.data.weight || 0,
-                                    "Link": "https://jel.ly.fish/" + card.slug
-                                })
-
-                                nodesAdded.push(card.slug);
-                            }
-                            else
-                            {
-                                console.log("Ignoring duplicate: " + card.slug)
-                            }
-
-                            if (!nodesAdded.includes(l.slug)) {
-                                data.nodes.push({
-                                    "id": l.slug,
-                                    "name": l.name,
-                                    "group": l.type.substring(0, l.type.indexOf('@')),
-                                    "weight": l.data.weight || 0,
-                                    "Link": "https://jel.ly.fish/" + l.slug
-                                })
-                                nodesAdded.push(l.slug);
-                            } else {
-                                console.log("Ignoring duplicate: " + l.slug)
-                            }
-
-                            data.links.push({
-                                "source": card.slug,
-                                "target": l.slug,
-                                "weight": (card.data.weight || 0) + (l.data.weight || 0) 
-                            })
+        await sdk.card.getWithLinks(improvement.slug, ['is attached to'])
+            .then((improvementCard) => {
+                if (improvementCard) {
+                    if (improvementCard.links) {
+                        for (link of (improvementCard.links['is attached to'].filter(l => (['saga@1.0.0', 'pattern@1.0.0'].includes(l.type))))) {
+                            AddNodeOrIgnoreDuplicate(link)
+                            AddLink(improvement, link);                           
                         }
                     }
                 }
@@ -97,6 +53,32 @@ async function GetData() {
 
     return data
 
+}
+
+function AddLink(source, target)
+{
+    data.links.push({
+        "source": source.slug,
+        "target": target.slug,
+        "weight": (source.data.weight || 0) + (target.data.weight || 0)
+    })
+}
+
+function AddNodeOrIgnoreDuplicate(card) {
+    if (!nodesAdded.includes(card.slug)) {
+        data.nodes.push({
+            "id": card.slug,
+            "name": card.name,
+            "group": card.type.substring(0, card.type.indexOf('@')),
+            "weight": card.data.weight || 0,
+            "Link": "https://jel.ly.fish/" + card.slug
+        })
+
+        nodesAdded.push(card.slug);
+    }
+    else {
+        console.log("Ignoring duplicate: " + card.slug)
+    }
 }
 
 
