@@ -23,35 +23,52 @@ async function GetData() {
     }
     sdk.setAuthToken(token);
 
-    data = await sheet.getSheetsData();
-    nodesAdded = data.nodes.map(d => d.id);
-    console.log("Got Google Sheets data");
-
-    console.log("Creating Sagas first")
-    let sagas = await sdk.card.getAllByType("saga@1.0.0");
-    for (let saga of sagas) {
-        AddNodeOrIgnoreDuplicate(saga)
+    try {
+        data = await sheet.getSheetsData();
+        nodesAdded = data.nodes.map(d => d.id);
+        console.log("Got Google Sheets data");
+    }
+    catch (error) {
+        console.log(error);
     }
 
-    console.log("Getting all improvements")
-    let improvements = await sdk.card.getAllByType("improvement@1.0.0");
-    for (let improvement of (improvements.filter(c => (c.data.status === "implementation")))) {
-        AddNodeOrIgnoreDuplicate(improvement)
+    try{
+        console.log("Creating Sagas first")
+        let sagas = await sdk.card.getAllByType("saga@1.0.0");
+        for (let saga of sagas) {
+            AddNodeOrIgnoreDuplicate(saga)
+        }
+    }
+    catch (error)
+    {
+        console.log(error);
+    }
 
-        await sdk.card.getWithLinks(improvement.slug, ['is attached to'])
-            .then((improvementCard) => {
-                if (improvementCard) {
-                    if (improvementCard.links) {
-                        for (link of (improvementCard.links['is attached to'].filter(l => (['saga@1.0.0', 'pattern@1.0.0'].includes(l.type))))) {
-                            AddNodeOrIgnoreDuplicate(link)
-                            AddLink(improvement, link);                           
+    try {
+        console.log("Getting all improvements")
+        let improvements = await sdk.card.getAllByType("improvement@1.0.0");
+        for (let improvement of (improvements.filter(c => (c.data.status === "implementation")))) {
+            AddNodeOrIgnoreDuplicate(improvement)
+
+            await sdk.card.getWithLinks(improvement.slug, ['is attached to'])
+                .then((improvementCard) => {
+                    if (improvementCard) {
+                        if (improvementCard.links) {
+                            for (link of (improvementCard.links['is attached to'].filter(l => (['saga@1.0.0', 'pattern@1.0.0'].includes(l.type))))) {
+                                AddNodeOrIgnoreDuplicate(link)
+                                AddLink(improvement, link);
+                            }
                         }
                     }
-                }
-            })
-    }
+                })
+        }
 
-    return data
+        return data
+    }
+    catch (error)
+    {
+        console.log(error);
+    }
 
 }
 

@@ -16,7 +16,15 @@ async function GetData() {
 
 
 app.get('/', (req, res) => {
-    res.render('home');
+    res.render('graph');
+});
+
+app.get('/sankey', (req, res) => {
+    res.render('sankey');
+});
+
+app.get('/dag', (req, res) => {
+    res.render('dag');
 });
 
 app.get('/api/data', async (req, res) => {
