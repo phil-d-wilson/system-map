@@ -5,6 +5,7 @@ app.use(express.static('public'));
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', './views');
+const path = require('path');
 
 let jsonData = require('./data/data.json');
 
@@ -24,7 +25,7 @@ app.get('/sankey', (req, res) => {
 });
 
 app.get('/dag', (req, res) => {
-    res.render('dag');
+    res.render('cytoscape');
 });
 
 app.get('/api/data', async (req, res) => {

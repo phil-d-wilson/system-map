@@ -56,7 +56,7 @@ async function GetData() {
                         if (improvementCard.links) {
                             for (link of (improvementCard.links['is attached to'].filter(l => (['saga@1.0.0', 'pattern@1.0.0'].includes(l.type))))) {
                                 AddNodeOrIgnoreDuplicate(link)
-                                AddLink(improvement, link);
+                                AddLink(link, improvement);
                             }
                         }
                     }
@@ -77,7 +77,9 @@ function AddLink(source, target)
     data.links.push({
         "source": source.slug,
         "target": target.slug,
-        "weight": (source.data.weight || 0) + (target.data.weight || 0)
+        "weight": (source.data.weight || 0) + (target.data.weight || 0),
+        "sourceType": source.type.substring(0, source.type.indexOf('@')),
+        "targetType": target.type.substring(0, target.type.indexOf('@'))
     })
 }
 
